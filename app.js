@@ -182,10 +182,10 @@ app.post("/gacha", auth, async (req, res) => {
         }
 
         const oldGacha = await Gacha.findOne({
-          admin_id: admin_id,
+          admin: admin_id,
           rate: rate,
         });
-
+        
         // find for replace old
         if (oldGacha) {
           await Gacha.findByIdAndUpdate(
