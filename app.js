@@ -5,6 +5,8 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("./model/user");
 const Admin = require("./model/admin");
+const Gacha = require("./model/gachapon");
+const auth = require("./middleware/auth");
 const jwt = require("jsonwebtoken");
 const app = express();
 
@@ -145,6 +147,49 @@ app.post("/admin/register", async (req, res) => {
     admin.token = token;
     // return new admin
     res.status(201).json(admin);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post("/gacha", auth, async (req, res) => {
+  try {
+    if (!req.body.username) {
+      const { admin_id } = req.user;
+      const admin = await Admin.findById(admin_id);
+
+      //check permission
+      if (admin) {
+        const { admin_id } = req.user;
+        const { title, rate } = req.body;
+
+        //validate user input
+        if (!(admin_id && title && rate)) {
+          res.status(400).send("All input is required");
+        }
+        const oldGacha = await Gacha.findOne({
+          admin_id: admin_id,
+          rate: rate,
+        });
+
+        // find for replace old
+        if (oldGacha) {
+          await Gacha.findByIdAndUpdate(
+            { _id: oldGacha._id },
+            { title: title }
+          );
+          return res.status(201).send("create update");
+        } else {
+          const gacha = await Gacha.create({
+            admin: admin_id,
+            title,
+            rate,
+          });
+          return res.status(201).json(gacha);
+        }
+      }
+      res.status(403).send("Only admin have permission");
+    }
   } catch (error) {
     console.log(error);
   }
