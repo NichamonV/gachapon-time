@@ -165,6 +165,7 @@ app.post("/admin/register", async (req, res) => {
   }
 });
 
+//account admin
 app.patch('/admin/account/:id',auth,  async (req, res) => {
   try {
     const _id = req.params.id;
