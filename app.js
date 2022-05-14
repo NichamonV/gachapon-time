@@ -11,15 +11,18 @@ const jwt = require("jsonwebtoken");
 const app = express();
 
 const config = process.env;
+const rankRate = {
+  bronze: { N: 0.8, R: 0.2 },
+  silver: { N: 0.8, R: 0.15, SR: 0.05 },
+  gold: { N: 0.8, R: 0.15, SR: 0.04, UR: 0.01 },
+};
 
 function validateRate(rank, rate) {
-  const rankRate = {
-    bronze: ["N", "R"],
-    silver: ["N", "R", "SR"],
-    gold: ["N", "R", "SR", "UR"],
-  };
+  return Object.keys(rankRate[rank]).includes(rate);
+}
 
-  return rankRate[rank].includes(rate);
+function getRateNum(rank, rate) {
+  return rankRate[rank][rate];
 }
 
 app.use(express.json());
@@ -183,9 +186,9 @@ app.post("/gacha", auth, async (req, res) => {
 
         const oldGacha = await Gacha.findOne({
           admin: admin_id,
-          rate: rate,
+          rate_title: rate,
         });
-        
+
         // find for replace old
         if (oldGacha) {
           await Gacha.findByIdAndUpdate(
@@ -197,7 +200,8 @@ app.post("/gacha", auth, async (req, res) => {
           const gacha = await Gacha.create({
             admin: admin_id,
             title,
-            rate,
+            rate_title: rate,
+            rate_number: getRateNum(admin.rank, rate),
           });
           return res.status(201).json(gacha);
         }
