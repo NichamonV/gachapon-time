@@ -165,6 +165,19 @@ app.post("/admin/register", async (req, res) => {
   }
 });
 
+//account admin
+app.patch('/admin/account/:id',auth,  async (req, res) => {
+  try {
+    const _id = req.params.id;
+    const updateAdmin = await Admin.findByIdAndUpdate(_id, req.body, {
+      new: true
+    });
+    res.status(200).send(updateAdmin);
+  } catch (error) {
+    res.status(404).send(error);
+  }
+});
+
 app.post("/gacha", auth, async (req, res) => {
   try {
     if (!req.body.username) {
