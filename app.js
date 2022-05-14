@@ -173,7 +173,7 @@ app.patch('/admin/account/:id',auth,  async (req, res) => {
     });
     res.status(200).send(updateAdmin);
   } catch (error) {
-    res.status(404).send(updateAdmin);
+    res.status(404).send(error);
   }
 });
 
