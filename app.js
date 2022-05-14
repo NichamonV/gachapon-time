@@ -12,6 +12,16 @@ const app = express();
 
 const config = process.env;
 
+function validateRate(rank, rate) {
+  const rankRate = {
+    bronze: ["N", "R"],
+    silver: ["N", "R", "SR"],
+    gold: ["N", "R", "SR", "UR"],
+  };
+
+  return rankRate[rank].includes(rate);
+}
+
 app.use(express.json());
 
 // Login for user
@@ -156,17 +166,21 @@ app.post("/gacha", auth, async (req, res) => {
   try {
     if (!req.body.username) {
       const { admin_id } = req.user;
+      const { title, rate } = req.body;
       const admin = await Admin.findById(admin_id);
 
       //check permission
       if (admin) {
-        const { admin_id } = req.user;
-        const { title, rate } = req.body;
-
         //validate user input
         if (!(admin_id && title && rate)) {
-          res.status(400).send("All input is required");
+          return res.status(400).send("All input is required");
         }
+
+        //validate rate
+        if (!validateRate(admin.rank, rate)) {
+          return res.status(400).send("invalid rate");
+        }
+
         const oldGacha = await Gacha.findOne({
           admin_id: admin_id,
           rate: rate,
@@ -188,7 +202,7 @@ app.post("/gacha", auth, async (req, res) => {
           return res.status(201).json(gacha);
         }
       }
-      res.status(403).send("Only admin have permission");
+      return res.status(403).send("Only admin have permission");
     }
   } catch (error) {
     console.log(error);
