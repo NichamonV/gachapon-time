@@ -39,16 +39,12 @@ function playGachapon(rank, gachas) {
 
 function gachaForGold(gachas, rand, item) {
   if (rand <= 80) {
-    // console.log(obj[0.8]);
     item = gachas[0.8];
   } else if (rand <= 95) {
-    // console.log(obj[0.15]);
     item = gachas[0.15];
   } else if (rand <= 99) {
-    // console.log(obj[0.04]);
     item = gachas[0.04];
   } else {
-    // console.log(obj[0.01]);
     item = gachas[0.01];
   }
   return item;
@@ -56,13 +52,10 @@ function gachaForGold(gachas, rand, item) {
 
 function gachaForSilver(gachas, rand, item) {
   if (rand <= 80) {
-    // console.log(obj[0.8]);
     item = gachas[0.8];
   } else if (rand <= 95) {
-    // console.log(obj[0.15]);
     item = gachas[0.15];
   } else {
-    // console.log(obj[0.05]);
     item = gachas[0.05];
   }
   return item;
@@ -70,10 +63,8 @@ function gachaForSilver(gachas, rand, item) {
 
 function gachaForBronze(gachas, rand, item) {
   if (rand <= 80) {
-    // console.log(obj[0.8]);
     item = gachas[0.8];
   } else{
-    // console.log(obj[0.2]);
     item = gachas[0.2];
   }
   return item;
@@ -171,13 +162,14 @@ app.post("/gachapon", auth, async (req, res) => {
     const admin = await Admin.findById(admin_id);
     let gachas = {};
 
+    //map item and rate
     gacha.forEach((element) => {
       gachas[element.rate_number] = element.title;
     });
 
     const item = playGachapon(admin.rank, gachas);
-
     
+
 
     res.status(200).send(item);
   } catch (error) {
