@@ -36,7 +36,7 @@ function genItems(adminRank, items) {
   }));
 }
 
-function rankCounter(items, adminRank) {
+function isValidGachaSet(items, adminRank) {
   const cntN = items.filter((item) => item.rank == "N").length;
   const cntR = items.filter((item) => item.rank == "R").length;
   const cntSR = items.filter((item) => item.rank == "SR").length;
@@ -58,7 +58,7 @@ function rankCounter(items, adminRank) {
 }
 
 function validateItem(items, adminRank) {
-  return rankCounter(items, adminRank) && isIncludeRank(items, adminRank);
+  return isValidGachaSet(items, adminRank) && isIncludeRank(items, adminRank);
 }
 
 // Login for admin
