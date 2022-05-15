@@ -23,7 +23,7 @@ function getRateNum(rank, rate) {
 }
 
 // Login for admin
-router.post("/account/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     //validate
