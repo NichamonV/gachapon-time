@@ -17,8 +17,7 @@ const rankRate = {
 function isIncludeRank(items, adminRank) {
   let result = true;
   for (const item of items) {
-    let gachaRank = item.rank;
-    if (!Object.keys(rankRate[adminRank]).includes(gachaRank)) {
+    if (!Object.keys(rankRate[adminRank]).includes(item.rank)) {
       result = false;
     }
   }
@@ -30,43 +29,20 @@ function getRate(adminRank, gachaRank) {
 }
 
 function genItems(adminRank, items) {
-  let newItems = [];
-  for (const item of items) {
-    let gachaRank = item.rank;
-    let title = item.title;
-
-    newItems.push({
-      title: title,
-      rank: gachaRank,
-      rate: getRate(adminRank, gachaRank),
-    });
-  }
-  return newItems;
+  return items.map((item) => ({
+    title: item.title,
+    rank: item.rank,
+    rate: getRate(adminRank, item.rank),
+  }));
 }
 
 function rankCounter(items, adminRank) {
-  let cntN = 0;
-  let cntR = 0;
-  let cntSR = 0;
-  let cntUR = 0;
+  const cntN = items.filter(item => item.rank == "N").length;
+  const cntR = items.filter(item => item.rank == "R").length;
+  const cntSR = items.filter(item => item.rank == "SR").length;
+  const cntUR = items.filter(item => item.rank == "UR").length;
   let result = false;
-  for (const item of items) {
-    let rank = item.rank;
-    switch (rank) {
-      case "N":
-        cntN += 1;
-        break;
-      case "R":
-        cntR += 1;
-        break;
-      case "SR":
-        cntSR += 1;
-        break;
-      case "UR":
-        cntUR += 1;
-        break;
-    }
-  }
+
   switch (adminRank) {
     case "bronze":
       result = cntN == 1 && cntR == 1;
