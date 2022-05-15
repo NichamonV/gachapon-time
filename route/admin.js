@@ -14,12 +14,75 @@ const rankRate = {
   gold: { N: 0.8, R: 0.15, SR: 0.04, UR: 0.01 },
 };
 
-function validateRate(rank, rate) {
-  return Object.keys(rankRate[rank]).includes(rate);
+function isIncludeRank(items, adminRank) {
+  let result = true;
+  for (const item of items) {
+    let gachaRank = item.rank;
+    if (!Object.keys(rankRate[adminRank]).includes(gachaRank)) {
+      result = false;
+    }
+  }
+  return result;
 }
 
-function getRateNum(rank, rate) {
-  return rankRate[rank][rate];
+function getRate(adminRank, gachaRank) {
+  return rankRate[adminRank][gachaRank];
+}
+
+function genItems(adminRank, items) {
+  let newItems = [];
+  for (const item of items) {
+    let gachaRank = item.rank;
+    let title = item.title;
+
+    newItems.push({
+      title: title,
+      rank: gachaRank,
+      rate: getRate(adminRank, gachaRank),
+    });
+  }
+  return newItems;
+}
+
+function rankCounter(items, adminRank) {
+  let cntN = 0;
+  let cntR = 0;
+  let cntSR = 0;
+  let cntUR = 0;
+  let result = false;
+  for (const item of items) {
+    let rank = item.rank;
+    switch (rank) {
+      case "N":
+        cntN += 1;
+        break;
+      case "R":
+        cntR += 1;
+        break;
+      case "SR":
+        cntSR += 1;
+        break;
+      case "UR":
+        cntUR += 1;
+        break;
+    }
+  }
+  switch (adminRank) {
+    case "bronze":
+      result = cntN == 1 && cntR == 1;
+      break;
+    case "silver":
+      result = cntN == 1 && cntR == 1 && cntSR == 1;
+      break;
+    case "gold":
+      result = cntN == 1 && cntR == 1 && cntSR == 1 && cntUR == 1;
+      break;
+  }
+  return result;
+}
+
+function validateItem(items, adminRank) {
+  return rankCounter(items, adminRank) && isIncludeRank(items, adminRank);
 }
 
 // Login for admin
@@ -89,7 +152,6 @@ router.post("/account", async (req, res) => {
       return res.status(201).json(admin);
     }
   } catch (error) {
-    console.log(error)
     return res.status(404).send(error);
   }
 });
@@ -111,36 +173,35 @@ router.patch("/account/:id", auth, async (req, res) => {
 router.post("/gacha", auth, async (req, res) => {
   try {
     const { admin_id } = req.user;
-    const { title, rate } = req.body;
+    const { items } = req.body;
     const admin = await Admin.findById(admin_id);
-
     //check permission
     if (admin) {
-      //validate user input
-      if (!(admin_id && title && rate)) {
+      //validate input
+      if (!(admin_id && items)) {
         return res.status(400).send("All input is required");
       }
-
-      //validate rate
-      if (!validateRate(admin.rank, rate)) {
-        return res.status(400).send("invalid rate");
+      //validate items input
+      if (!validateItem(items, admin.rank)) {
+        return res.status(400).send("invalid gachapon rank");
       }
 
       const oldGacha = await Gacha.findOne({
         admin: admin_id,
-        rate_title: rate,
       });
-
       // find for replace old
       if (oldGacha) {
-        await Gacha.findByIdAndUpdate({ _id: oldGacha._id }, { title: title });
-        return res.status(201).send("create update");
+        await Gacha.findByIdAndUpdate(
+          { _id: oldGacha._id },
+          {
+            items: genItems(admin.rank, items),
+          }
+        );
+        return res.status(201).send("Update gachapon");
       } else {
         const gacha = await Gacha.create({
           admin: admin_id,
-          title,
-          rate_title: rate,
-          rate_number: getRateNum(admin.rank, rate),
+          items: genItems(admin.rank, items),
         });
         return res.status(201).json(gacha);
       }
