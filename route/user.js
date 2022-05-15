@@ -134,9 +134,8 @@ router.post("/account", async (req, res) => {
 // Play gachapon
 router.post("/gachapon", auth, async (req, res) => {
   try {
-    const { user_id } = req.user;
     const { admin_id } = req.body;
-    const user = await User.findById(user_id);
+    const user = req.user;
 
     if (user.coin < 20) {
       return res.status(400).send("Need coin for play gachapon");
@@ -153,11 +152,11 @@ router.post("/gachapon", auth, async (req, res) => {
     const item = playGachapon(admin.rank, gachas);
 
     // pay
-    await User.findByIdAndUpdate(user_id, { $inc: { coin: -20 } });
+    await User.findByIdAndUpdate(user._id, { $inc: { coin: -20 } });
 
     // create user gachapon
     await UserGacha.create({
-      user: user_id,
+      user: user._id,
       title: item,
     });
 
