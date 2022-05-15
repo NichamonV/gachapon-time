@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
+const config = process.env;
 
 exports.connext = () => {
   mongoose
-    .connect("mongodb://localhost:27017", {
+    .connect(config.MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
