@@ -6,7 +6,7 @@ const Admin = require("../model/admin");
 const Gacha = require("../model/gachapon");
 const auth = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
-const router = express.Router()
+const router = express.Router();
 
 const config = process.env;
 
@@ -104,27 +104,28 @@ router.post("/account", async (req, res) => {
     const oldUser = await User.findOne({ email });
     if (oldUser) {
       return res.status(409).send("User already exist. Please login.");
+    } else {
+      // encrypt password
+      encryptedPassword = await bcrypt.hash(password, 10);
+
+      //Create user in database
+      const user = await User.create({
+        first_name,
+        last_name,
+        email: email.toLowerCase(),
+        password: encryptedPassword,
+      });
+
+      //Create token
+      const token = jwt.sign({ user_id: user._id, email }, config.TOKEN_KEY, {
+        expiresIn: "2h",
+      });
+
+      //save user token
+      user.token = token;
+      // return new user
+      return res.status(201).json(user);
     }
-    // encrypt password
-    encryptedPassword = await bcrypt.hash(password, 10);
-
-    //Create user in database
-    const user = await User.create({
-      first_name,
-      last_name,
-      email: email.toLowerCase(),
-      password: encryptedPassword,
-    });
-
-    //Create token
-    const token = jwt.sign({ user_id: user._id, email }, config.TOKEN_KEY, {
-      expiresIn: "2h",
-    });
-
-    //save user token
-    user.token = token;
-    // return new user
-    return res.status(201).json(user);
   } catch (error) {
     return res.status(404).send(error);
   }

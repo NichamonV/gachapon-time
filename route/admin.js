@@ -65,29 +65,31 @@ router.post("/account", async (req, res) => {
     const oldAdmin = await Admin.findOne({ email });
     if (oldAdmin) {
       return res.status(409).send("Admin already exist. Please login.");
+    } else {
+      // encrypt password
+      encryptedPassword = await bcrypt.hash(password, 10);
+
+      //Create admin in database
+      const admin = await Admin.create({
+        first_name,
+        last_name,
+        email: email.toLowerCase(),
+        password: encryptedPassword,
+        rank,
+      });
+
+      //Create token
+      const token = jwt.sign({ admin_id: admin._id, email }, config.TOKEN_KEY, {
+        expiresIn: "2h",
+      });
+
+      //save token
+      admin.token = token;
+      // return new admin
+      return res.status(201).json(admin);
     }
-    // encrypt password
-    encryptedPassword = await bcrypt.hash(password, 10);
-
-    //Create admin in database
-    const admin = await Admin.create({
-      first_name,
-      last_name,
-      email: email.toLowerCase(),
-      password: encryptedPassword,
-      rank,
-    });
-
-    //Create token
-    const token = jwt.sign({ admin_id: admin._id, email }, config.TOKEN_KEY, {
-      expiresIn: "2h",
-    });
-
-    //save token
-    admin.token = token;
-    // return new admin
-    return res.status(201).json(admin);
   } catch (error) {
+    console.log(error)
     return res.status(404).send(error);
   }
 });
