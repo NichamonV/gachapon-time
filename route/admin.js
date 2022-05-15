@@ -8,7 +8,7 @@ const router = express.Router();
 
 const config = process.env;
 
-const rankRate = {
+const RANK_RATE = {
   bronze: { N: 0.8, R: 0.2 },
   silver: { N: 0.8, R: 0.15, SR: 0.05 },
   gold: { N: 0.8, R: 0.15, SR: 0.04, UR: 0.01 },
@@ -17,7 +17,7 @@ const rankRate = {
 function isIncludeRank(items, adminRank) {
   let result = true;
   for (const item of items) {
-    if (!Object.keys(rankRate[adminRank]).includes(item.rank)) {
+    if (!Object.keys(RANK_RATE[adminRank]).includes(item.rank)) {
       result = false;
     }
   }
@@ -25,7 +25,7 @@ function isIncludeRank(items, adminRank) {
 }
 
 function getRate(adminRank, gachaRank) {
-  return rankRate[adminRank][gachaRank];
+  return RANK_RATE[adminRank][gachaRank];
 }
 
 function genItems(adminRank, items) {
@@ -37,10 +37,10 @@ function genItems(adminRank, items) {
 }
 
 function rankCounter(items, adminRank) {
-  const cntN = items.filter(item => item.rank == "N").length;
-  const cntR = items.filter(item => item.rank == "R").length;
-  const cntSR = items.filter(item => item.rank == "SR").length;
-  const cntUR = items.filter(item => item.rank == "UR").length;
+  const cntN = items.filter((item) => item.rank == "N").length;
+  const cntR = items.filter((item) => item.rank == "R").length;
+  const cntSR = items.filter((item) => item.rank == "SR").length;
+  const cntUR = items.filter((item) => item.rank == "UR").length;
   let result = false;
 
   switch (adminRank) {
