@@ -4,6 +4,7 @@ require("./config/database").connext();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("./model/user");
+const UserGacha = require("./model/user_gachapon");
 const Admin = require("./model/admin");
 const Gacha = require("./model/gachapon");
 const auth = require("./middleware/auth");
@@ -20,7 +21,6 @@ const rankRate = {
 
 function playGachapon(rank, gachas) {
   var rand = Math.floor(Math.random() * 101);
-  console.log(rand);
   let item = "";
   switch (rank) {
     case "bronze":
@@ -64,7 +64,7 @@ function gachaForSilver(gachas, rand, item) {
 function gachaForBronze(gachas, rand, item) {
   if (rand <= 80) {
     item = gachas[0.8];
-  } else{
+  } else {
     item = gachas[0.2];
   }
   return item;
@@ -148,7 +148,7 @@ app.post("/user", async (req, res) => {
   }
 });
 
-// play gachapon
+// Play gachapon
 app.post("/gachapon", auth, async (req, res) => {
   try {
     const { user_id } = req.user;
@@ -162,14 +162,21 @@ app.post("/gachapon", auth, async (req, res) => {
     const admin = await Admin.findById(admin_id);
     let gachas = {};
 
-    //map item and rate
+    // map item and rate
     gacha.forEach((element) => {
       gachas[element.rate_number] = element.title;
     });
 
     const item = playGachapon(admin.rank, gachas);
-    
 
+    // pay
+    await User.findByIdAndUpdate(user_id, { $inc: { coin: -20 } });
+
+    // create user gachapon
+    await UserGacha.create({
+      user: user_id,
+      title: item,
+    });
 
     res.status(200).send(item);
   } catch (error) {
@@ -313,7 +320,7 @@ app.post("/admin/gacha", auth, async (req, res) => {
 app.post("/webhook/bank", authBank, async (req, res) => {
   try {
     const { account_id, amount } = req.body;
-    await User.findByIdAndUpdate(accountID, { $inc: { coin: amount } });
+    await User.findByIdAndUpdate(account_id, { $inc: { coin: amount } });
     res.status(200).send("Success");
   } catch (error) {
     res.status(404).send(error);
