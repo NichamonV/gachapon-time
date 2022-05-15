@@ -141,13 +141,13 @@ router.post("/gachapon", auth, async (req, res) => {
     if (user.coin < 20) {
       return res.status(400).send("Need coin for play gachapon");
     }
-    const gacha = await Gacha.find({ admin: admin_id });
+    const gacha = await Gacha.findOne({ admin: admin_id });
     const admin = await Admin.findById(admin_id);
     let gachas = {};
 
     // map item and rate
-    gacha.forEach((element) => {
-      gachas[element.rate_number] = element.title;
+    gacha.items.forEach((element) => {
+      gachas[element.rate] = element.title;
     });
 
     const item = playGachapon(admin.rank, gachas);
