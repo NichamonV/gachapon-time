@@ -7,8 +7,8 @@ const User = require("./model/user");
 const Admin = require("./model/admin");
 const Gacha = require("./model/gachapon");
 const auth = require("./middleware/auth");
+const authBank = require("./middleware/auth_bank");
 const jwt = require("jsonwebtoken");
-const { count } = require("./model/user");
 const app = express();
 
 const config = process.env;
@@ -167,11 +167,11 @@ app.post("/admin/account", async (req, res) => {
 });
 
 // Account admin
-app.patch('/admin/account/:id',auth,  async (req, res) => {
+app.patch("/admin/account/:id", auth, async (req, res) => {
   try {
     const _id = req.params.id;
     const updateAdmin = await Admin.findByIdAndUpdate(_id, req.body, {
-      new: true
+      new: true,
     });
     res.status(200).send(updateAdmin);
   } catch (error) {
@@ -228,10 +228,10 @@ app.post("/admin/gacha", auth, async (req, res) => {
 });
 
 // Payment
-app.post("/webhook/bank", async (req, res) => {
+app.post("/webhook/bank", authBank, async (req, res) => {
   try {
     const { accountID, amount } = req.body;
-    await User.findByIdAndUpdate(accountID, { coin: amount });
+    await User.findByIdAndUpdate(accountID, {$inc: { coin: amount }});
     res.status(200).send("Success");
   } catch (error) {
     res.status(404).send(error);
