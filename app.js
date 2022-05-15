@@ -18,6 +18,67 @@ const rankRate = {
   gold: { N: 0.8, R: 0.15, SR: 0.04, UR: 0.01 },
 };
 
+function playGachapon(rank, gachas) {
+  var rand = Math.floor(Math.random() * 101);
+  console.log(rand);
+  let item = "";
+  switch (rank) {
+    case "bronze":
+      item = gachaForBronze(gachas, rand);
+      break;
+    case "silver":
+      item = gachaForSilver(gachas, rand);
+      break;
+    case "gold":
+      item = gachaForGold(gachas, rand);
+      break;
+  }
+
+  return item;
+}
+
+function gachaForGold(gachas, rand, item) {
+  if (rand <= 80) {
+    // console.log(obj[0.8]);
+    item = gachas[0.8];
+  } else if (rand <= 95) {
+    // console.log(obj[0.15]);
+    item = gachas[0.15];
+  } else if (rand <= 99) {
+    // console.log(obj[0.04]);
+    item = gachas[0.04];
+  } else {
+    // console.log(obj[0.01]);
+    item = gachas[0.01];
+  }
+  return item;
+}
+
+function gachaForSilver(gachas, rand, item) {
+  if (rand <= 80) {
+    // console.log(obj[0.8]);
+    item = gachas[0.8];
+  } else if (rand <= 95) {
+    // console.log(obj[0.15]);
+    item = gachas[0.15];
+  } else {
+    // console.log(obj[0.05]);
+    item = gachas[0.05];
+  }
+  return item;
+}
+
+function gachaForBronze(gachas, rand, item) {
+  if (rand <= 80) {
+    // console.log(obj[0.8]);
+    item = gachas[0.8];
+  } else{
+    // console.log(obj[0.2]);
+    item = gachas[0.2];
+  }
+  return item;
+}
+
 function validateRate(rank, rate) {
   return Object.keys(rankRate[rank]).includes(rate);
 }
@@ -93,6 +154,34 @@ app.post("/user", async (req, res) => {
     res.status(201).json(user);
   } catch (error) {
     console.log(error);
+  }
+});
+
+// play gachapon
+app.post("/gachapon", auth, async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { admin_id } = req.body;
+    const user = await User.findById(user_id);
+
+    if (user.coin <= 20) {
+      return res.status(400).send("Need coin for play gachapon");
+    }
+    const gacha = await Gacha.find({ admin: admin_id });
+    const admin = await Admin.findById(admin_id);
+    let gachas = {};
+
+    gacha.forEach((element) => {
+      gachas[element.rate_number] = element.title;
+    });
+
+    const item = playGachapon(admin.rank, gachas);
+
+    
+
+    res.status(200).send(item);
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
@@ -179,6 +268,7 @@ app.patch("/admin/account/:id", auth, async (req, res) => {
   }
 });
 
+// create gachapon
 app.post("/admin/gacha", auth, async (req, res) => {
   try {
     if (!req.body.username) {
@@ -230,8 +320,8 @@ app.post("/admin/gacha", auth, async (req, res) => {
 // Payment
 app.post("/webhook/bank", authBank, async (req, res) => {
   try {
-    const { accountID, amount } = req.body;
-    await User.findByIdAndUpdate(accountID, {$inc: { coin: amount }});
+    const { account_id, amount } = req.body;
+    await User.findByIdAndUpdate(accountID, { $inc: { coin: amount } });
     res.status(200).send("Success");
   } catch (error) {
     res.status(404).send(error);
