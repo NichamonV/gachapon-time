@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const Admin = require("../model/admin");
 const Gacha = require("../model/gachapon");
-const auth = require("../middleware/auth");
+const auth = require("../middleware/auth_admin");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 
@@ -133,10 +133,10 @@ router.post("/account", async (req, res) => {
 });
 
 // Account admin
-router.patch("/account/:id", auth, async (req, res) => {
+router.patch("/account", auth, async (req, res) => {
   try {
-    const _id = req.params.id;
-    const updateAdmin = await Admin.findByIdAndUpdate(_id, req.body, {
+    const admin = req.user;
+    const updateAdmin = await Admin.findByIdAndUpdate(admin._id, req.body, {
       new: true,
     });
     return res.status(200).send(updateAdmin);
@@ -148,13 +148,10 @@ router.patch("/account/:id", auth, async (req, res) => {
 // create gachapon
 router.post("/gacha", auth, async (req, res) => {
   try {
-    const { admin_id } = req.user;
+    const admin = req.user;
     const { items } = req.body;
-    const admin = await Admin.findById(admin_id);
-    //check permission
-    if (admin) {
       //validate input
-      if (!(admin_id && items)) {
+      if (!items) {
         return res.status(400).send("All input is required");
       }
       //validate items input
@@ -163,7 +160,7 @@ router.post("/gacha", auth, async (req, res) => {
       }
 
       const oldGacha = await Gacha.findOne({
-        admin: admin_id,
+        admin: admin._id,
       });
       // find for replace old
       if (oldGacha) {
@@ -176,13 +173,12 @@ router.post("/gacha", auth, async (req, res) => {
         return res.status(201).send("Update gachapon");
       } else {
         const gacha = await Gacha.create({
-          admin: admin_id,
+          admin: admin._id,
           items: genItems(admin.rank, items),
         });
         return res.status(201).json(gacha);
       }
-    }
-    return res.status(403).send("Only admin have permission");
+    
   } catch (error) {
     return res.status(404).send(error);
   }
