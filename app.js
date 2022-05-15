@@ -28,7 +28,7 @@ function getRateNum(rank, rate) {
 app.use(express.json());
 
 // Login for user
-app.post("/login", async (req, res) => {
+app.post("/user/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     //validate
@@ -57,7 +57,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Register for user
-app.post("/register", async (req, res) => {
+app.post("/user", async (req, res) => {
   try {
     // get user input
     const { first_name, last_name, email, password } = req.body;
@@ -96,7 +96,7 @@ app.post("/register", async (req, res) => {
 });
 
 // Login for admin
-app.post("/admin/login", async (req, res) => {
+app.post("/admin/account/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     //validate
@@ -125,7 +125,7 @@ app.post("/admin/login", async (req, res) => {
 });
 
 // Register for admin
-app.post("/admin/register", async (req, res) => {
+app.post("/admin/account", async (req, res) => {
   try {
     // get input
     const { first_name, last_name, email, password, rank } = req.body;
@@ -178,7 +178,7 @@ app.patch('/admin/account/:id',auth,  async (req, res) => {
   }
 });
 
-app.post("/gacha", auth, async (req, res) => {
+app.post("/admin/gacha", auth, async (req, res) => {
   try {
     if (!req.body.username) {
       const { admin_id } = req.user;
