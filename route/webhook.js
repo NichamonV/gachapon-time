@@ -10,7 +10,7 @@ router.post("/bank", authBank, async (req, res) => {
     await User.findByIdAndUpdate(account_id, { $inc: { coin: amount } });
     res.status(200).send("Success");
   } catch (error) {
-    res.status(404).send(error);
+    res.status(500).send(error);
   }
 });
 

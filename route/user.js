@@ -86,8 +86,7 @@ router.post("/login", async (req, res) => {
 
     return res.status(400).send("Invalid Credentials");
   } catch (error) {
-    console.log(error);
-    return res.status(404).send(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -127,7 +126,7 @@ router.post("/account", async (req, res) => {
       return res.status(201).json(user);
     }
   } catch (error) {
-    return res.status(404).send(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -162,7 +161,7 @@ router.post("/gachapon", auth, async (req, res) => {
 
     return res.status(200).send(item);
   } catch (error) {
-    return res.status(400).send(error);
+    return res.status(500).send(error);
   }
 });
 

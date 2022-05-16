@@ -86,7 +86,7 @@ router.post("/login", async (req, res) => {
 
     return res.status(400).send("Invalid Credentials");
   } catch (error) {
-    return res.status(404).send(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -128,7 +128,7 @@ router.post("/account", async (req, res) => {
       return res.status(201).json(admin);
     }
   } catch (error) {
-    return res.status(404).send(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -141,7 +141,7 @@ router.patch("/account", auth, async (req, res) => {
     });
     return res.status(200).send(updateAdmin);
   } catch (error) {
-    return res.status(404).send(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -180,7 +180,7 @@ router.post("/gacha", auth, async (req, res) => {
       }
     
   } catch (error) {
-    return res.status(404).send(error);
+    return res.status(500).send(error);
   }
 });
 
